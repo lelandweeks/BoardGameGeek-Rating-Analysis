@@ -7,13 +7,15 @@ Date: June 2026
 
 import argparse
 
-from data import load_data
-from features import get_features, LR_CONFIG
-from models import run_regression
+from data import load_data, merge_data
+from features import get_features, CONFIG
+from models import run_regression, run_lasso, run_ridge
 from evaluate import evaluate_regression, get_regression_metrics
 from logger import log_run
 
 OUTPUT_DIR = 'output/'
+LASSO_ALPHA = 0.001
+RIDGE_ALPHA = 1.0
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model",
@@ -24,6 +26,7 @@ args = parser.parse_args()
 # load the data
 print("Loading data...")
 dfs = load_data()
+df = merge_data(dfs)
 
 print("Data Loaded:")
 for key in dfs.keys():
@@ -40,20 +43,53 @@ if "q2" in models:
     model_name = "Linear Regression"
     target = "AvgRating"
     print(question)
+    
+    X, y = get_features(df, target, model_name)
+
+    # run linear regression
     print("Running Linear Regression...")
-
-    X, y = get_features(dfs, target, model_name)
     y_test, y_pred = run_regression(X, y)
-
     metrics = get_regression_metrics(y_test, y_pred)
     evaluate_regression(metrics)
-
     print()
     log_run(
         question = question,
         model_name = model_name,
-        features = LR_CONFIG[0],
-        preprocessing = LR_CONFIG[1],
-        feature_engineering= LR_CONFIG[2],
+        features = CONFIG[0],
+        preprocessing = CONFIG[1],
+        feature_engineering= CONFIG[2],
+        hyperparameters = None,
+        results = metrics
+    )
+
+    # run lasso regression
+    print("Running Lasso Regression...")
+    y_test, y_pred = run_lasso(X, y, LASSO_ALPHA)
+    metrics = get_regression_metrics(y_test, y_pred)
+    evaluate_regression(metrics)
+    print()
+    log_run(
+        question = question,
+        model_name = "Lasso",
+        features = CONFIG[0],
+        preprocessing = CONFIG[1],
+        feature_engineering = CONFIG[2],
+        hyperparameters = {"alpha": LASSO_ALPHA},
+        results = metrics
+    )
+
+    # run ridge regression
+    print("Running Ridge Regression...")
+    y_test, y_pred = run_ridge(X, y, alpha=RIDGE_ALPHA)
+    metrics = get_regression_metrics(y_test, y_pred)
+    evaluate_regression(metrics)
+    print()
+    log_run(
+        question = question,
+        model_name = "Ridge",
+        features = CONFIG[0],
+        preprocessing = CONFIG[1],
+        feature_engineering = CONFIG[2],
+        hyperparameters = {"alpha": RIDGE_ALPHA},
         results = metrics
     )

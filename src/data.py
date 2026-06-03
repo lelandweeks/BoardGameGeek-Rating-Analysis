@@ -18,5 +18,11 @@ def load_data():
         k = f.replace('.csv', '')
         v = pd.read_csv(DIR_PATH + f)
         data[k] = v
-
     return data
+
+def merge_data(dfs):
+    df = dfs['games']
+    df = df.merge(dfs['mechanics'], on="BGGId", how="left")
+    df = df.merge(dfs['themes'], on="BGGId", how="left")
+    df = df.merge(dfs['subcategories'], on="BGGId", how="left")
+    return df

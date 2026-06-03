@@ -11,7 +11,9 @@ from datetime import datetime
 
 LOG_PATH = "output/runs_log.json"
 
-def log_run(question, model_name, features, preprocessing, feature_engineering, results):
+def log_run(question, model_name, features, 
+            preprocessing, feature_engineering, 
+            hyperparameters,results):
 
     # load existing log if it exists
     if os.path.exists(LOG_PATH):
@@ -28,6 +30,7 @@ def log_run(question, model_name, features, preprocessing, feature_engineering, 
         "features":            features,
         "preprocessing":       preprocessing,
         "feature_engineering": feature_engineering,
+        "hyperparameters":     hyperparameters,
         "results":             results,
     }
 

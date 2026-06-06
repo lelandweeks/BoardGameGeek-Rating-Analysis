@@ -6,20 +6,24 @@ Date: June 2026
 """
 
 import argparse
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 from data import load_data, merge_data
-from features import get_features, CONFIG, CAT_GENRES, get_genre_features
-from models import run_regression, run_lasso, run_ridge
+from features import get_features, get_genre_features
+from features import CONFIG, CAT_GENRES
+from features import get_class_features, create_rating_label
+from models import run_logistic_reg, run_linear_reg, run_lasso, run_ridge
 from models import run_dt, run_rf
-from evaluate import evaluate_regression, get_regression_metrics
+from evaluate import print_class_metrics, eval_reg, get_reg_metrics
 from logger import log_run
 
 OUTPUT_DIR = 'output/'
+MAX_ITER = 10000 # 1000=>5000 were both too low for convergence
 LASSO_ALPHA = 0.001
 RIDGE_ALPHA = 1.0
 DT_MAX_DEPTH = None
 RF_N_ESTIMATORS = 100
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model",
@@ -42,20 +46,46 @@ models = ["q1", "q2", "q3"]
 if args.model != "all":
     models = [args.model]
 
+if "q1" in models:
+    question = "Q1: What games are overrated and underrated?"
+    model_name = "Logistic Regression"
+    target = "AvgRating"
+    print(question)
+    print()
+
+    df = create_rating_label(df)
+    X, y = get_class_features(df)
+
+    # run logistic regression
+    print("Running Logistic Regression...")
+    y_test, y_pred = run_logistic_reg(X, y, max_iter=MAX_ITER)
+    metrics = print_class_metrics(y_test, y_pred)
+    log_run(
+        question = question,
+        model_name = model_name,
+        features = CONFIG[0],
+        preprocessing = CONFIG[1],
+        feature_engineering= CONFIG[2],
+        hyperparameters = {"max_iter": MAX_ITER},
+        results = metrics
+    )
+    print()
+
+
 if "q2" in models:
     question = "Q2: Can we predict a game's average rating based on its features?"
     model_name = "Linear Regression"
     target = "AvgRating"
     print(question)
     print()
-        
+
     X, y = get_features(df, target, model_name)
 
     # run linear regression
     print("Running Linear Regression...")
-    y_test, y_pred = run_regression(X, y)
-    metrics = get_regression_metrics(y_test, y_pred)
-    evaluate_regression(metrics)
+    y_test, y_pred = run_linear_reg(X, y)
+    metrics = get_reg_metrics(y_test, y_pred)
+    eval_reg(metrics)
     log_run(
         question = question,
         model_name = model_name,
@@ -70,8 +100,8 @@ if "q2" in models:
     # run lasso regression
     print("Running Lasso Regression...")
     y_test, y_pred = run_lasso(X, y, LASSO_ALPHA)
-    metrics = get_regression_metrics(y_test, y_pred)
-    evaluate_regression(metrics)
+    metrics = get_reg_metrics(y_test, y_pred)
+    eval_reg(metrics)
     log_run(
         question = question,
         model_name = "Lasso",
@@ -86,8 +116,8 @@ if "q2" in models:
     # run ridge regression
     print("Running Ridge Regression...")
     y_test, y_pred = run_ridge(X, y, alpha=RIDGE_ALPHA)
-    metrics = get_regression_metrics(y_test, y_pred)
-    evaluate_regression(metrics)
+    metrics = get_reg_metrics(y_test, y_pred)
+    eval_reg(metrics)
     log_run(
         question = question,
         model_name = "Ridge",
@@ -102,8 +132,8 @@ if "q2" in models:
     # run decision tree
     print("Running Decision Tree Regression...")
     y_test, y_pred = run_dt(X, y, DT_MAX_DEPTH)
-    metrics = get_regression_metrics(y_test, y_pred)
-    evaluate_regression(metrics)
+    metrics = get_reg_metrics(y_test, y_pred)
+    eval_reg(metrics)
     log_run(
         question            = question,
         model_name          = "DecisionTree",
@@ -118,8 +148,8 @@ if "q2" in models:
     # run random forest
     print("Running Random Forest Regression...")
     y_test, y_pred = run_rf(X, y, RF_N_ESTIMATORS)
-    metrics = get_regression_metrics(y_test, y_pred)
-    evaluate_regression(metrics)
+    metrics = get_reg_metrics(y_test, y_pred)
+    eval_reg(metrics)
     log_run(
         question            = question,
         model_name          = "RandomForest",
@@ -143,9 +173,9 @@ if "q3" in models:
         X, y = get_genre_features(df, genre)
 
         y_test, y_pred = run_regression(X, y)
-        metrics = get_regression_metrics(y_test, y_pred)
+        metrics = get_reg_metrics(y_test, y_pred)
         print(f"\n{genre}")
-        evaluate_regression(metrics)
+        eval_reg(metrics)
         log_run(
             question           = question,
             model_name         = model_name,

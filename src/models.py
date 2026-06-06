@@ -5,6 +5,7 @@ Author: Leland Weeks
 Date: June 2026
 """
 
+from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -13,7 +14,44 @@ from sklearn.model_selection import train_test_split
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
 
-def run_regression(X, y):
+def run_classifier(X, y):
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE
+    )
+
+    model = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    return y_test, y_pred
+
+
+
+def run_logistic_reg(X, y, max_iter=1000):
+
+    # split into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE
+    )
+
+    # train a logistic regression model
+    model = LogisticRegression(max_iter=max_iter, random_state=RANDOM_STATE)
+    model.fit(X_train, y_train)
+
+    # generate predictions on the test set
+    y_pred = model.predict(X_test)
+
+    return y_test, y_pred   
+
+
+
+def run_linear_reg(X, y):
 
     # split into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(

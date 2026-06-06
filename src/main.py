@@ -10,12 +10,16 @@ import argparse
 from data import load_data, merge_data
 from features import get_features, CONFIG, CAT_GENRES, get_genre_features
 from models import run_regression, run_lasso, run_ridge
+from models import run_dt, run_rf
 from evaluate import evaluate_regression, get_regression_metrics
 from logger import log_run
 
 OUTPUT_DIR = 'output/'
 LASSO_ALPHA = 0.001
 RIDGE_ALPHA = 1.0
+DT_MAX_DEPTH = None
+RF_N_ESTIMATORS = 100
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model",
@@ -43,7 +47,8 @@ if "q2" in models:
     model_name = "Linear Regression"
     target = "AvgRating"
     print(question)
-    
+    print()
+        
     X, y = get_features(df, target, model_name)
 
     # run linear regression
@@ -51,7 +56,6 @@ if "q2" in models:
     y_test, y_pred = run_regression(X, y)
     metrics = get_regression_metrics(y_test, y_pred)
     evaluate_regression(metrics)
-    print()
     log_run(
         question = question,
         model_name = model_name,
@@ -61,13 +65,13 @@ if "q2" in models:
         hyperparameters = None,
         results = metrics
     )
+    print()
 
     # run lasso regression
     print("Running Lasso Regression...")
     y_test, y_pred = run_lasso(X, y, LASSO_ALPHA)
     metrics = get_regression_metrics(y_test, y_pred)
     evaluate_regression(metrics)
-    print()
     log_run(
         question = question,
         model_name = "Lasso",
@@ -77,13 +81,13 @@ if "q2" in models:
         hyperparameters = {"alpha": LASSO_ALPHA},
         results = metrics
     )
+    print()
 
     # run ridge regression
     print("Running Ridge Regression...")
     y_test, y_pred = run_ridge(X, y, alpha=RIDGE_ALPHA)
     metrics = get_regression_metrics(y_test, y_pred)
     evaluate_regression(metrics)
-    print()
     log_run(
         question = question,
         model_name = "Ridge",
@@ -93,16 +97,47 @@ if "q2" in models:
         hyperparameters = {"alpha": RIDGE_ALPHA},
         results = metrics
     )
+    print()
+
+    # run decision tree
+    print("Running Decision Tree Regression...")
+    y_test, y_pred = run_dt(X, y, DT_MAX_DEPTH)
+    metrics = get_regression_metrics(y_test, y_pred)
+    evaluate_regression(metrics)
+    log_run(
+        question            = question,
+        model_name          = "DecisionTree",
+        features            = CONFIG[0],
+        preprocessing       = CONFIG[1],
+        feature_engineering = CONFIG[2],
+        hyperparameters     = {"max_depth": DT_MAX_DEPTH},
+        results             = metrics
+    )
+    print()
+
+    # run random forest
+    print("Running Random Forest Regression...")
+    y_test, y_pred = run_rf(X, y, RF_N_ESTIMATORS)
+    metrics = get_regression_metrics(y_test, y_pred)
+    evaluate_regression(metrics)
+    log_run(
+        question            = question,
+        model_name          = "RandomForest",
+        features            = CONFIG[0],
+        preprocessing       = CONFIG[1],
+        feature_engineering = CONFIG[2],
+        hyperparameters     = {"n_estimators": RF_N_ESTIMATORS},
+        results             = metrics
+    )
+    print()
 
 
 if "q3" in models:
     question = "Q3: Does complexity predict rating within a genre?"
     model_name = "Linear Regression"
     target = "AvgRating"
-    print(question)
-
-
-    print("")
+    print(question) 
+    print()
 
     for genre in CAT_GENRES:
         X, y = get_genre_features(df, genre)
@@ -111,7 +146,6 @@ if "q3" in models:
         metrics = get_regression_metrics(y_test, y_pred)
         print(f"\n{genre}")
         evaluate_regression(metrics)
-        print()
         log_run(
             question           = question,
             model_name         = model_name,
@@ -121,3 +155,4 @@ if "q3" in models:
             hyperparameters    = {"genre": genre},
             results            = metrics
         )
+        print()

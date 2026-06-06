@@ -6,9 +6,12 @@ Date: June 2026
 """
 
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
 TEST_SIZE = 0.2
+RANDOM_STATE = 42
 
 def run_regression(X, y):
 
@@ -16,7 +19,7 @@ def run_regression(X, y):
     X_train, X_test, y_train, y_test = train_test_split(
         X, y,
         test_size=TEST_SIZE,
-        random_state=42
+        random_state=RANDOM_STATE
     )
 
     # train a linear regression model
@@ -33,7 +36,7 @@ def run_lasso(X, y, alpha):
     X_train, X_test, y_train, y_test = train_test_split(
         X, y,
         test_size=TEST_SIZE,
-        random_state=42
+        random_state=RANDOM_STATE
     )
 
     model = Lasso(alpha=alpha, random_state=42)
@@ -49,10 +52,44 @@ def run_ridge(X, y, alpha=1.0):
     X_train, X_test, y_train, y_test = train_test_split(
         X, y,
         test_size=TEST_SIZE,
-        random_state=42
+        random_state=RANDOM_STATE
     )
 
     model = Ridge(alpha=alpha, random_state=42)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    return y_test, y_pred
+
+
+# decision tree
+def run_dt(X, y, max_depth=None):
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE
+    )
+
+    model = DecisionTreeRegressor(max_depth=max_depth, random_state=RANDOM_STATE)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    return y_test, y_pred
+
+# random forest
+# 100 default
+def run_rf(X, y, n_estimators=100):
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE
+    )
+
+    model = RandomForestRegressor(n_estimators=n_estimators, random_state=RANDOM_STATE)
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)

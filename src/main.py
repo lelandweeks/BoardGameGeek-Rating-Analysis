@@ -8,7 +8,7 @@ Date: June 2026
 import argparse
 
 from data import load_data, merge_data
-from features import get_features, CONFIG
+from features import get_features, CONFIG, CAT_GENRES, get_genre_features
 from models import run_regression, run_lasso, run_ridge
 from evaluate import evaluate_regression, get_regression_metrics
 from logger import log_run
@@ -93,3 +93,31 @@ if "q2" in models:
         hyperparameters = {"alpha": RIDGE_ALPHA},
         results = metrics
     )
+
+
+if "q3" in models:
+    question = "Q3: Does complexity predict rating within a genre?"
+    model_name = "Linear Regression"
+    target = "AvgRating"
+    print(question)
+
+
+    print("")
+
+    for genre in CAT_GENRES:
+        X, y = get_genre_features(df, genre)
+
+        y_test, y_pred = run_regression(X, y)
+        metrics = get_regression_metrics(y_test, y_pred)
+        print(f"\n{genre}")
+        evaluate_regression(metrics)
+        print()
+        log_run(
+            question           = question,
+            model_name         = model_name,
+            features           = ["GameWeight"],
+            preprocessing      = ["dropna"],
+            feature_engineering= CONFIG[2],
+            hyperparameters    = {"genre": genre},
+            results            = metrics
+        )

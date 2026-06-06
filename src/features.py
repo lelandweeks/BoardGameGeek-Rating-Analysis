@@ -30,6 +30,11 @@ LR_FEATURES = [
 
 LOG_FEATURES = ["MfgPlaytime", "NumExpansions", "MaxPlayers"]
 
+CAT_GENRES = [
+    "Cat:Thematic", "Cat:Strategy", "Cat:War", "Cat:Family",
+    "Cat:CGS", "Cat:Abstract", "Cat:Party", "Cat:Childrens"
+]
+
 def get_features(data, target, model_name):
 
     if model_name == "Linear Regression":
@@ -74,3 +79,17 @@ def _get_binary_columns(df):
         if df[col].dropna().isin([0, 1]).all():
             binary_cols.append(col)
     return binary_cols
+
+
+def get_genre_features(df, genre_col):
+
+    # filter to games in this genre
+    genre_df = df[df[genre_col] == 1].copy()
+
+    # drop rows missing target or predictor
+    genre_df = genre_df.dropna(subset=["AvgRating", "GameWeight"])
+
+    X = genre_df[["GameWeight"]]
+    y = genre_df["AvgRating"]
+
+    return X, y

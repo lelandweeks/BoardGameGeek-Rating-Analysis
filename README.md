@@ -85,20 +85,20 @@ Each run appends results to `output/runs_log.json` for experiment tracking.
 ## Key Findings
 
 **Q1 — What games are overrated and underrated?**
-- `NumOwned` is extremely right-skewed — log1p transform applied
+- `NumOwned` is extremely right-skewed — need to apply log1p
 - Positive correlation between ownership and rating
-- Equal-bin `pd.qcut` produces balanced classes — no imbalance problem
+- Equal-bin `pd.qcut` produces balanced classes
 
 **Q2 — What features make a boardgame enjoyable?**
 - `AvgRating` is approximately normal — great regression target
-- `GameWeight` is the strongest predictor of rating
+- `GameWeight` is the strongest predictor
 - `MfgPlaytime`, `NumExpansions`, `MaxPlayers` are severely right-skewed — log1p applied
 - `YearPublished` has extreme negative skew — log does not help, used as-is
-- StandardScaler applied before linear models; not needed for tree-based models
-- 400+ binary features from mechanics/themes/subcategories included
+- StandardScaler applied before linear models
+- 400+ binary features from mechanics/themes/subcategories
 
 **Q3 — Does complexity predict rating within a genre?**
-- `GameWeight` varies meaningfully across genres
-- Thematic and Strategy genres show the strongest `GameWeight` signal
-- Party games show near-zero signal — complexity is not predictive in casual genres
-- Genre-level differences justify the segmented regression approach
+- `GameWeight` varies across genres
+- Thematic and Strategy genres are the strongest `GameWeight` signal
+- Party games show zero complexity is not predictive
+- Genre-level differences justify regression modeling

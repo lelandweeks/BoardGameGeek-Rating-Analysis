@@ -10,25 +10,10 @@ from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
-
-def run_classifier(X, y):
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
-        test_size=TEST_SIZE,
-        random_state=RANDOM_STATE
-    )
-
-    model = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)
-    model.fit(X_train, y_train)
-
-    y_pred = model.predict(X_test)
-
-    return y_test, y_pred
-
 
 
 def run_logistic_reg(X, y, max_iter=1000):
@@ -40,6 +25,11 @@ def run_logistic_reg(X, y, max_iter=1000):
         random_state=RANDOM_STATE
     )
 
+    # moved from features.py
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test  = scaler.transform(X_test)
+
     # train a logistic regression model
     model = LogisticRegression(max_iter=max_iter, random_state=RANDOM_STATE)
     model.fit(X_train, y_train)
@@ -50,7 +40,6 @@ def run_logistic_reg(X, y, max_iter=1000):
     return y_test, y_pred   
 
 
-
 def run_linear_reg(X, y):
 
     # split into train and test sets
@@ -59,6 +48,11 @@ def run_linear_reg(X, y):
         test_size=TEST_SIZE,
         random_state=RANDOM_STATE
     )
+
+    # moved from features.py
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test  = scaler.transform(X_test)
 
     # train a linear regression model
     model = LinearRegression()
@@ -77,6 +71,11 @@ def run_lasso(X, y, alpha):
         random_state=RANDOM_STATE
     )
 
+    # moved from features.py
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test  = scaler.transform(X_test)
+
     model = Lasso(alpha=alpha, random_state=42)
     model.fit(X_train, y_train)
 
@@ -92,6 +91,11 @@ def run_ridge(X, y, alpha=1.0):
         test_size=TEST_SIZE,
         random_state=RANDOM_STATE
     )
+
+    # moved from features.py
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test  = scaler.transform(X_test)
 
     model = Ridge(alpha=alpha, random_state=42)
     model.fit(X_train, y_train)

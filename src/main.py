@@ -10,10 +10,11 @@ import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 from data import load_data, merge_data
-from features import get_features, get_genre_features
-from features import CONFIG, CAT_GENRES
+from features import get_linear_features, get_genre_features
 from features import get_class_features, create_rating_label
-from models import run_logistic_reg, run_linear_reg, run_lasso, run_ridge
+from features import CONFIG, CAT_GENRES
+from models import run_logistic_reg
+from models import run_linear_reg, run_lasso, run_ridge
 from models import run_dt, run_rf
 from evaluate import print_class_metrics, eval_reg, get_reg_metrics
 from logger import log_run
@@ -64,7 +65,7 @@ if "q1" in models:
         question = question,
         model_name = model_name,
         features = CONFIG[0],
-        preprocessing = CONFIG[1],
+        preprocessing = CONFIG[1] + ["StandardScaler"],
         feature_engineering= CONFIG[2],
         hyperparameters = {"max_iter": MAX_ITER},
         results = metrics
@@ -79,7 +80,7 @@ if "q2" in models:
     print(question)
     print()
 
-    X, y = get_features(df, target, model_name)
+    X, y = get_linear_features(df, target)
 
     # run linear regression
     print("Running Linear Regression...")
@@ -90,7 +91,7 @@ if "q2" in models:
         question = question,
         model_name = model_name,
         features = CONFIG[0],
-        preprocessing = CONFIG[1],
+        preprocessing = CONFIG[1] + ["StandardScaler"],
         feature_engineering= CONFIG[2],
         hyperparameters = None,
         results = metrics
@@ -106,7 +107,7 @@ if "q2" in models:
         question = question,
         model_name = "Lasso",
         features = CONFIG[0],
-        preprocessing = CONFIG[1],
+        preprocessing = CONFIG[1] + ["StandardScaler"],
         feature_engineering = CONFIG[2],
         hyperparameters = {"alpha": LASSO_ALPHA},
         results = metrics
@@ -122,7 +123,7 @@ if "q2" in models:
         question = question,
         model_name = "Ridge",
         features = CONFIG[0],
-        preprocessing = CONFIG[1],
+        preprocessing = CONFIG[1] + ["StandardScaler"],
         feature_engineering = CONFIG[2],
         hyperparameters = {"alpha": RIDGE_ALPHA},
         results = metrics
@@ -135,13 +136,13 @@ if "q2" in models:
     metrics = get_reg_metrics(y_test, y_pred)
     eval_reg(metrics)
     log_run(
-        question            = question,
-        model_name          = "DecisionTree",
-        features            = CONFIG[0],
-        preprocessing       = CONFIG[1],
+        question = question,
+        model_name = "DecisionTree",
+        features = CONFIG[0],
+        preprocessing = CONFIG[1],
         feature_engineering = CONFIG[2],
-        hyperparameters     = {"max_depth": DT_MAX_DEPTH},
-        results             = metrics
+        hyperparameters = {"max_depth": DT_MAX_DEPTH},
+        results = metrics
     )
     print()
 
@@ -151,13 +152,13 @@ if "q2" in models:
     metrics = get_reg_metrics(y_test, y_pred)
     eval_reg(metrics)
     log_run(
-        question            = question,
-        model_name          = "RandomForest",
-        features            = CONFIG[0],
-        preprocessing       = CONFIG[1],
+        question = question,
+        model_name = "RandomForest",
+        features = CONFIG[0],
+        preprocessing = CONFIG[1],
         feature_engineering = CONFIG[2],
-        hyperparameters     = {"n_estimators": RF_N_ESTIMATORS},
-        results             = metrics
+        hyperparameters = {"n_estimators": RF_N_ESTIMATORS},
+        results = metrics
     )
     print()
 
@@ -168,21 +169,21 @@ if "q3" in models:
     target = "AvgRating"
     print(question) 
     print()
-
+    
     for genre in CAT_GENRES:
         X, y = get_genre_features(df, genre)
 
-        y_test, y_pred = run_regression(X, y)
+        y_test, y_pred = run_linear_reg(X, y)
         metrics = get_reg_metrics(y_test, y_pred)
-        print(f"\n{genre}")
+        print(f"{genre}")
         eval_reg(metrics)
         log_run(
-            question           = question,
-            model_name         = model_name,
-            features           = ["GameWeight"],
-            preprocessing      = ["dropna"],
-            feature_engineering= CONFIG[2],
-            hyperparameters    = {"genre": genre},
-            results            = metrics
+            question = question,
+            model_name = model_name,
+            features = ["GameWeight"],
+            preprocessing = ["dropna"],
+            feature_engineering = CONFIG[2],
+            hyperparameters = {"genre": genre},
+            results = metrics
         )
         print()

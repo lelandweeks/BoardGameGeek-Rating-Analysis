@@ -9,9 +9,6 @@ Date: June 2026
 import numpy as np
 import pandas as pd
 
-from sklearn.preprocessing import StandardScaler
-
-
 # for logger.py
 features = []
 preprocessing = []
@@ -77,51 +74,39 @@ def get_class_features(df):
 
     y = df.loc[X.index, 'rating_class']
 
-    # scale features
-    # kept getting warning "lbfgs failed to converge"
-    # after increaseing max_iter=10000, decided to scale features
-    preprocessing.append("StandardScaler")
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    return X, y
 
-    return X_scaled, y
-
-def get_features(data, target, model_name):
+def get_linear_features(data, target):
 
     # for the logger
     _reset_config()
 
-    if model_name == "Linear Regression":
+    #if model_name == "Linear Regression":
         
-        # drop rows missing the target
-        df = data.dropna(subset=[target])
+    # drop rows missing the target
+    df = data.dropna(subset=[target])
         
-        # select the features
-        binary_cols = _get_binary_columns(df)
-        X = df[LR_FEATURES + binary_cols].copy()
+    # select the features
+    binary_cols = _get_binary_columns(df)
+    X = df[LR_FEATURES + binary_cols].copy()
 
-        # set empty binary columns to 0 (assume missing)
-        X[binary_cols] = X[binary_cols].fillna(0)
-        features.extend(X.columns.tolist())
+    # set empty binary columns to 0 (assume missing)
+    X[binary_cols] = X[binary_cols].fillna(0)
+    features.extend(X.columns.tolist())
 
-        # drop rows with missing values   
-        preprocessing.append("dropna")
-        X = X.dropna()
+    # drop rows with missing values   
+    preprocessing.append("dropna")
+    X = X.dropna()
 
-        # align y to the same rows as X
-        y = df.loc[X.index, target]
+    # align y to the same rows as X
+    y = df.loc[X.index, target]
 
-        # feature engineering
-        feature_engineering.append("log1p(" + ", ".join(LOG_FEATURES) + ")")
-        for col in LOG_FEATURES:
-            X[col] = np.log1p(X[col])
+    # feature engineering
+    feature_engineering.append("log1p(" + ", ".join(LOG_FEATURES) + ")")
+    for col in LOG_FEATURES:
+        X[col] = np.log1p(X[col])
 
-        # scale features
-        preprocessing.append("StandardScaler")
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
-
-    return X_scaled, y
+    return X, y
 
 
 # all binary columns from mechanics, themes, subcategories are 0/1

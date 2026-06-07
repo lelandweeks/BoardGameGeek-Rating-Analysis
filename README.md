@@ -1,5 +1,6 @@
 # BoardGameGeek Rating Analysis
 DSCI 631: Applied Machine Learning — Final Project
+
 Group 2 | Leland Weeks | Spring 2026
 
 ## Overview

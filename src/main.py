@@ -19,6 +19,9 @@ from models import run_dt, run_rf
 from evaluate import print_class_metrics, eval_reg, get_reg_metrics
 from logger import log_run
 
+from sklearn.linear_model import LogisticRegression
+from models import run_grid_search
+
 OUTPUT_DIR = 'output/'
 MAX_ITER = 10000 # 1000=>5000 were both too low for convergence
 LASSO_ALPHA = 0.001
@@ -69,6 +72,27 @@ if "q1" in models:
         feature_engineering= CONFIG[2],
         hyperparameters = {"max_iter": MAX_ITER},
         results = metrics
+    )
+    print()
+
+    # following the grid search example from class
+    y_test, y_pred, best_params = run_grid_search(
+        X, y, LogisticRegression(
+            max_iter=MAX_ITER,
+            random_state=42
+        ),
+        {"C": [0.01, 0.1, 1.0, 10.0]},
+        scoring='accuracy'
+    )
+    metrics = print_class_metrics(y_test, y_pred)
+    log_run(
+        question=question, 
+        model_name="LogisticRegression GridSearch", 
+        features=CONFIG[0], 
+        preprocessing=CONFIG[1] + ["StandardScaler"], 
+        feature_engineering=CONFIG[2], 
+        hyperparameters=best_params, 
+        results=metrics
     )
     print()
 

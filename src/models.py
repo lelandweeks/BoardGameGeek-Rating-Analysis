@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 
 TEST_SIZE = 0.2
@@ -37,7 +37,7 @@ def run_logistic_reg(X, y, max_iter=1000):
     # generate predictions on the test set
     y_pred = model.predict(X_test)
 
-    return y_test, y_pred   
+    return y_test, y_pred
 
 
 def run_linear_reg(X, y):
@@ -63,6 +63,7 @@ def run_linear_reg(X, y):
 
     return y_test, y_pred
 
+
 def run_lasso(X, y, alpha):
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -71,7 +72,6 @@ def run_lasso(X, y, alpha):
         random_state=RANDOM_STATE
     )
 
-    # moved from features.py
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test  = scaler.transform(X_test)
@@ -92,7 +92,6 @@ def run_ridge(X, y, alpha=1.0):
         random_state=RANDOM_STATE
     )
 
-    # moved from features.py
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test  = scaler.transform(X_test)
@@ -121,8 +120,8 @@ def run_dt(X, y, max_depth=None):
 
     return y_test, y_pred
 
-# random forest
-# 100 default
+
+# random forest — no scaling needed, tree-based model
 def run_rf(X, y, n_estimators=100):
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -137,3 +136,27 @@ def run_rf(X, y, n_estimators=100):
     y_pred = model.predict(X_test)
 
     return y_test, y_pred
+
+# for hyperparameter tuning
+def run_grid_search(X, y, model, param_grid, scoring='r2', scale=True):
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE
+    )
+
+    if scale:
+        scaler = StandardScaler()
+        X_train = scaler.fit_transform(X_train)
+        X_test  = scaler.transform(X_test)
+
+    grid_search = GridSearchCV(
+        model, param_grid, cv=5, 
+        scoring=scoring, n_jobs=-1)
+    grid_search.fit(X_train, y_train)
+
+    best_model = grid_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+
+    return y_test, y_pred, grid_search.best_params_
